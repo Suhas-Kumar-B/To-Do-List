@@ -8,14 +8,12 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class TodoListGUI extends JFrame implements ActionListener {
     private JPanel taskComponentPanel;
     private JButton addTaskButton, saveTasksButton;
     private final String FILE_NAME = "tasks.json";
     private final Gson gson;
-    private static final Logger logger = Logger.getLogger(TodoListGUI.class.getName());
 
     public TodoListGUI() {
         gson = new Gson();
@@ -105,7 +103,7 @@ public class TodoListGUI extends JFrame implements ActionListener {
             gson.toJson(tasks, writer); // Serialize tasks to JSON and save it to a file
             JOptionPane.showMessageDialog(this, "Tasks successfully saved!", "Success", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException e) {
-            logger.severe("Error saving tasks: " + e.getMessage());
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error saving tasks: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -116,16 +114,16 @@ public class TodoListGUI extends JFrame implements ActionListener {
             List<TaskData> tasks = gson.fromJson(reader, listType);
 
             if (tasks != null) {
-                for (Component component : taskComponentPanel.getComponents()) {
-                    if (component instanceof TaskComponent task) {
-                        tasks.add(new TaskData(task.getTaskfield().getText(), task.getCheckBox().isSelected()));
-                    }
+                for (TaskData data : tasks) {
+                    TaskComponent task = new TaskComponent(taskComponentPanel);
+                    task.setTask(data.getText(), data.isCompleted()); // Apply strikethrough if completed
+                    taskComponentPanel.add(task);
                 }
             }
         } catch (FileNotFoundException e) {
             // No file found, continue without tasks
         } catch (IOException e) {
-            logger.severe("Error loading tasks: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
